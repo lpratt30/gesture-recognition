@@ -1,0 +1,9 @@
+__pycache__/
+.env
+.vscode/
+gesture_recognition.code-workspace
+
+gesture_data/**
+!gesture_data/
+!gesture_data/**/
+!gesture_data/**/.gitkeep
