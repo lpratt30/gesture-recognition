@@ -6,6 +6,8 @@ Event-vision gesture recognition experiments, data tooling, and visualization sc
 
 The GIF below is generated from the current highest-ranked stream by the SNR sorter (`65536_A_19_10s.bin` at the time of generation).
 
+This helps illustrate the data sensing and collection process. 
+
 ![Highest-SNR event stream](assets/readme/highest_snr_stream.gif)
 
 ## Relevant Scripts
