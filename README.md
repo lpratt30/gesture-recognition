@@ -1,5 +1,7 @@
 # Gesture Recognition
 
+Status: `v0.0.1-alpha`
+
 Event-vision gesture recognition experiments, data tooling, and visualization scripts.
 
 ## Highest-SNR Event Stream
