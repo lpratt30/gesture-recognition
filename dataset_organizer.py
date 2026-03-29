@@ -1,5 +1,6 @@
 import os
 import shutil
+from project_paths import DATASET_V1_DIR
 
 def transfer_jsons(source_folder):
     # --- CONFIGURATION ---
@@ -57,9 +58,5 @@ def transfer_jsons(source_folder):
         print("No JSON files found to move.")
 
 if __name__ == "__main__":
-    # Change this path as needed
-    target_dir = r"C:\Users\pratt\OneDrive\Desktop\gesture_data\dataset_v1\negative"
-    transfer_jsons(target_dir)
-
-    target_dir = r"C:\Users\pratt\OneDrive\Desktop\gesture_data\dataset_v1\positive"
-    transfer_jsons(target_dir)
+    transfer_jsons(os.fspath(DATASET_V1_DIR / "negative"))
+    transfer_jsons(os.fspath(DATASET_V1_DIR / "positive"))

@@ -7,21 +7,22 @@ import joblib
 import xgboost as xgb  # <--- NEW IMPORT
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
+from project_paths import DATASET_V1_DIR, MODEL_AUDITS_DIR, XGB_MODEL_PATH
 
 # --- CONFIGURATION ---
-PROCESSED_ROOT = "." 
-RAW_IMAGE_ROOT = "."
+PROCESSED_ROOT = os.fspath(DATASET_V1_DIR)
+RAW_IMAGE_ROOT = os.fspath(DATASET_V1_DIR)
 
 FOLDERS = ["gesture_data/dataset_v1/positive_processed", "gesture_data/dataset_v1/negative_processed"]
 
 THRESHOLD = 0.6 
-MODEL_FILENAME = "peace_xgb_model.joblib" # <--- Changed filename
+MODEL_FILENAME = os.fspath(XGB_MODEL_PATH)
 
 AUDIT_DIRS = {
-    "TP": "true_positives",
-    "TN": "true_negatives",
-    "FP": "false_positives",
-    "FN": "false_negatives" 
+    "TP": os.fspath(MODEL_AUDITS_DIR / "xgboost" / "true_positives"),
+    "TN": os.fspath(MODEL_AUDITS_DIR / "xgboost" / "true_negatives"),
+    "FP": os.fspath(MODEL_AUDITS_DIR / "xgboost" / "false_positives"),
+    "FN": os.fspath(MODEL_AUDITS_DIR / "xgboost" / "false_negatives"),
 }
 
 EXPECTED_FEATURES = [
@@ -50,7 +51,7 @@ def setup_audit_directories():
 
 def load_dataset():
     data = []
-    print(f"Scanning for data in current directory...")
+    print(f"Scanning for data in {PROCESSED_ROOT}...")
     
     for folder in FOLDERS:
         processed_path = os.path.join(PROCESSED_ROOT, folder)

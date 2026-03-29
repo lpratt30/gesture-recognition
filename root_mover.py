@@ -1,8 +1,9 @@
 import os
 import shutil
+from project_paths import DATASET_V1_DIR
 
 # --- CONFIGURATION ---
-SOURCE_DIR = r"C:\Users\pratt\OneDrive\Desktop\gesture_recognition\gesture_data\dataset_v1"
+SOURCE_DIR = os.fspath(DATASET_V1_DIR)
 
 # Destination folder names (will be created inside SOURCE_DIR)
 NEG_IMG_FOLDER = "negative"

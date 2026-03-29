@@ -8,11 +8,12 @@ import math
 import pygame
 import os
 import time
+from project_paths import RF_MODEL_PATH
 
 # --- CONFIGURATION ---
 SERIAL_PORT = 'COM3'   # <--- CHECK DEVICE MANAGER
 BAUD_RATE = 115200     
-MODEL_PATH = r"C:\Users\pratt\OneDrive\Desktop\gesture_data\dataset_v0\dataset_processed\peace_rf_model.joblib"
+MODEL_PATH = os.fspath(RF_MODEL_PATH)
 AUDIO_PATH = r"C:\Users\pratt\Downloads\snoopspeechify_wattuptho-[AudioTrimmer.com].mp3"
 
 CONFIDENCE_THRESHOLD = 0.6

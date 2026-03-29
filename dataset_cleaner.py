@@ -1,4 +1,5 @@
 import os
+from project_paths import DATASET_V1_DIR
 
 def clean_unpaired_files(directory):
     # SETTINGS
@@ -81,7 +82,4 @@ def clean_unpaired_files(directory):
                     print(f"Error deleting {filename}: {e}")
 
 if __name__ == "__main__":
-    # The path provided in your request
-    target_folder = r"C:\Users\pratt\OneDrive\Desktop\gesture_data\dataset_v1\positive"
-    
-    clean_unpaired_files(target_folder)
+    clean_unpaired_files(os.fspath(DATASET_V1_DIR / "positive"))

@@ -7,23 +7,23 @@ import joblib
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
+from project_paths import DATASET_V1_DIR, MODEL_AUDITS_DIR, RF_MODEL_PATH
 
 # --- CONFIGURATION ---
-# "." means the script looks in the folder it is currently running in
-PROCESSED_ROOT = "." 
-RAW_IMAGE_ROOT = "."
+PROCESSED_ROOT = os.fspath(DATASET_V1_DIR)
+RAW_IMAGE_ROOT = os.fspath(DATASET_V1_DIR)
 
 # The folders to look for JSONs in
 FOLDERS = ["positive_processed", "negative_processed"]
 
 THRESHOLD = 0.7 
-MODEL_FILENAME = "peace_rf_model.joblib"
+MODEL_FILENAME = os.fspath(RF_MODEL_PATH)
 
 AUDIT_DIRS = {
-    "TP": "true_positives",
-    "TN": "true_negatives",
-    "FP": "false_positives",
-    "FN": "false_negatives" 
+    "TP": os.fspath(MODEL_AUDITS_DIR / "random_forest" / "true_positives"),
+    "TN": os.fspath(MODEL_AUDITS_DIR / "random_forest" / "true_negatives"),
+    "FP": os.fspath(MODEL_AUDITS_DIR / "random_forest" / "false_positives"),
+    "FN": os.fspath(MODEL_AUDITS_DIR / "random_forest" / "false_negatives"),
 }
 
 # EXACT FEATURE LIST
@@ -54,7 +54,7 @@ def setup_audit_directories():
 
 def load_dataset():
     data = []
-    print(f"Scanning for data in current directory...")
+    print(f"Scanning for data in {PROCESSED_ROOT}...")
     
     for folder in FOLDERS:
         processed_path = os.path.join(PROCESSED_ROOT, folder)

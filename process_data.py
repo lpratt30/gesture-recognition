@@ -3,9 +3,13 @@ import os
 import json
 import numpy as np
 import math
+from project_paths import DATASET_V0_DIR
 
 # --- CONFIGURATION ---
-TARGET_FOLDERS = ["gesture_data/dataset_v0/dataset/positive_peace_sign", "gesture_data/dataset_v0/dataset/negative_peace_sign"] 
+TARGET_FOLDERS = [
+    os.fspath(DATASET_V0_DIR / "dataset" / "positive_peace_sign"),
+    os.fspath(DATASET_V0_DIR / "dataset" / "negative_peace_sign"),
+]
 # ---------------------
 
 def calculate_spatial_features(gray_img, bbox):

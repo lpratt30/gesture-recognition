@@ -8,11 +8,12 @@ import sys
 import os
 import pygame
 from collections import deque # <--- NEW IMPORT FOR THE X/10 RULE
+from project_paths import XGB_MODEL_PATH
 
 # --- CONFIGURATION ---
 SERIAL_PORT = 'COM3'   # <--- CHECK YOUR DEVICE MANAGER
 BAUD_RATE = 115200     
-MODEL_PATH = r"C:\Users\pratt\OneDrive\Desktop\gesture_recognition\peace_xgb_model.joblib"
+MODEL_PATH = os.fspath(XGB_MODEL_PATH)
 AUDIO_PATH = r"C:\Users\pratt\Downloads\snoopspeechify_wattuptho-[AudioTrimmer.com].mp3"
 
 CONFIDENCE_THRESHOLD = 0.775 
