@@ -11,8 +11,6 @@ The implementation is split into two packages:
 - `data_handling/`: ingestion, transfers, visualization, tensor export, labeling, and dataset utilities
 - `modeling/`: training and experiment scripts
 
-The root-level script names are thin compatibility wrappers that import from those packages.
-
 The current workflow is organized around raw event streams:
 
 - raw recordings live in `gesture_data/raw_event_streams`
@@ -31,10 +29,9 @@ It is meant as a quick preview of the event collection and ranking pipeline.
 
 ## Relevant Scripts
 
-- `transfer_raw_event_streams.py`: move new raw event streams into `gesture_data/raw_event_streams` and visualize them
-- `event_visualizer.py`: build per-stream heatmaps, summaries, and MP4 previews
-- `event_tensor_pipeline.py`: export fixed-duration event windows as `.pt` tensors plus preview images
-- `event_tensor_dataset.py`: PyTorch dataset and dataloader helpers for saved window tensors
-- `event_frame_labeler.py`: review saved window previews and label them interactively
-- `snr_sort_event_frames.py`: estimate per-stream SNR and create an SNR-ranked stitched MP4
+- `python -m data_handling.transfer_raw_event_streams`: move new raw event streams into `gesture_data/raw_event_streams` and visualize them
+- `python -m data_handling.event_visualizer`: build per-stream heatmaps, summaries, and MP4 previews
+- `python -m data_handling.event_tensor_pipeline`: export fixed-duration event windows as `.pt` tensors plus preview images
+- `python -m data_handling.event_frame_labeler`: review saved window previews and label them interactively
+- `python -m data_handling.snr_sort_event_frames`: estimate per-stream SNR and create an SNR-ranked stitched MP4
 - `modeling/baseline_randomforest.py` and `modeling/xg_randomforest.py`: train the tabular models on processed features
