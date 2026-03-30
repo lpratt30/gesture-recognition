@@ -6,4 +6,5 @@ This package holds the data-side workflow:
 - event visualization and SNR ranking
 - event-window tensor export and PyTorch loading
 - interactive labeling
-- older dataset cleanup and organization scripts
+
+Blob/feature-era scripts now live under `data_handling/legacy/`.

@@ -2,6 +2,6 @@
 
 This package holds the model-training side of the project:
 
-- Random Forest training
-- XGBoost training
 - small local ML experiments
+
+Blob/feature-era training scripts now live under `modeling/legacy/`.
