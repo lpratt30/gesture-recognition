@@ -1,3 +1,5 @@
+"""Rank event streams by heuristic SNR and stitch them into one preview video."""
+
 import json
 
 import cv2
@@ -9,7 +11,7 @@ from event_core import (
     estimate_stream_snr,
     iter_input_files,
     render_event_frame,
-    split_event_frames,
+    split_event_windows,
 )
 from project_paths import EVENT_VISUALIZATIONS_DIR, RAW_EVENT_STREAMS_DIR, ensure_dir
 
@@ -25,20 +27,20 @@ def main():
     input_files = iter_input_files(RAW_EVENT_STREAMS_DIR)
     ranked_streams = []
     for file_path in input_files:
-        frames = split_event_frames(file_path, frame_window_ms=FRAME_WINDOW_MS)
-        if not frames:
+        windows = split_event_windows(file_path, frame_window_ms=FRAME_WINDOW_MS)
+        if not windows:
             continue
         ranked_streams.append(
             {
                 "file_path": file_path,
                 "file_name": file_path.name,
-                "frames": frames,
-                "metrics": estimate_stream_snr(frames),
+                "windows": windows,
+                "metrics": estimate_stream_snr(windows),
             }
         )
 
     if not ranked_streams:
-        print("No non-empty event frames found in {}".format(RAW_EVENT_STREAMS_DIR))
+        print("No non-empty event windows found in {}".format(RAW_EVENT_STREAMS_DIR))
         return
 
     ranked_streams.sort(key=lambda stream: stream["metrics"]["snr"], reverse=True)
@@ -56,16 +58,16 @@ def main():
     metadata = []
     total_frames = 0
     for rank, stream in enumerate(ranked_streams, start=1):
-        for frame in stream["frames"]:
+        for window in stream["windows"]:
             writer.write(
                 render_event_frame(
-                    frame,
+                    window,
                     annotate_lines=[
                         stream["file_name"],
                         "t={}..{}ms events={} snr={:.2f}".format(
-                            frame.start_ms, frame.end_ms, int(frame.signal), frame.snr
+                            window.start_ms, window.end_ms, int(window.signal), window.snr
                         ),
-                        "randomness={:.3f} noise={:.2f}".format(frame.randomness, frame.noise),
+                        "randomness={:.3f} noise={:.2f}".format(window.randomness, window.noise),
                     ],
                 )
             )
@@ -76,17 +78,17 @@ def main():
                 "rank": rank,
                 "file_name": stream["file_name"],
                 **stream["metrics"],
-                "frames": [
+                "windows": [
                     {
-                        "frame_idx": frame.frame_index,
-                        "start_ms": frame.start_ms,
-                        "end_ms": frame.end_ms,
-                        "signal": frame.signal,
-                        "randomness": frame.randomness,
-                        "noise": frame.noise,
-                        "snr": frame.snr,
+                        "window_idx": window.frame_index,
+                        "start_ms": window.start_ms,
+                        "end_ms": window.end_ms,
+                        "signal": window.signal,
+                        "randomness": window.randomness,
+                        "noise": window.noise,
+                        "snr": window.snr,
                     }
-                    for frame in stream["frames"]
+                    for window in stream["windows"]
                 ],
             }
         )
@@ -99,7 +101,7 @@ def main():
     print("Wrote {}".format(OUTPUT_VIDEO))
     print("Wrote {}".format(OUTPUT_METADATA))
     print(
-        "Sorted {} streams by estimated SNR and stitched {} frames in stream order.".format(
+        "Sorted {} streams by estimated SNR and stitched {} windows in stream order.".format(
             len(ranked_streams), total_frames
         )
     )

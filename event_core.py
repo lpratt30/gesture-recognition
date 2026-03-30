@@ -1,3 +1,5 @@
+"""Shared event-stream parsing, windowing, rendering, and scoring utilities."""
+
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,6 +18,8 @@ SNR_GRID_SIZE = 16
 
 @dataclass
 class EventWindow:
+    """A single fixed-duration slice of one raw event stream."""
+
     source_path: Path
     stream_name: str
     frame_index: int
@@ -29,6 +33,8 @@ class EventWindow:
 
 
 def load_events(path: Path) -> np.ndarray:
+    """Load a raw `.bin` stream as an `N x 6` uint16 event matrix."""
+
     raw = np.fromfile(path, dtype=EVENT_DTYPE)
     if raw.size % ROW_WIDTH != 0:
         raise ValueError("Event file does not contain a whole number of 6-value rows: {}".format(path))
@@ -36,6 +42,8 @@ def load_events(path: Path) -> np.ndarray:
 
 
 def infer_timestamps_ms(events: np.ndarray) -> np.ndarray:
+    """Build a sortable timestamp signal from the event time columns."""
+
     return (
         events[:, 1].astype(np.int64) * 1_000_000
         + events[:, 2].astype(np.int64) * 1_000
@@ -44,6 +52,8 @@ def infer_timestamps_ms(events: np.ndarray) -> np.ndarray:
 
 
 def infer_duration_ms(source_path: Path, event_count: int) -> int:
+    """Infer stream duration from the filename, with a count-based fallback."""
+
     match = re.search(r"_(\d+)s\.bin$", source_path.name)
     if match:
         return int(match.group(1)) * 1000
@@ -51,6 +61,8 @@ def infer_duration_ms(source_path: Path, event_count: int) -> int:
 
 
 def normalize_timestamps_ms(ordering_signal: np.ndarray, duration_ms: int) -> np.ndarray:
+    """Map event ordering onto a normalized timeline with the target duration."""
+
     if len(ordering_signal) == 0:
         return ordering_signal
 
@@ -66,6 +78,8 @@ def normalize_timestamps_ms(ordering_signal: np.ndarray, duration_ms: int) -> np
 
 
 def iter_input_files(input_path: Path):
+    """Yield `.bin` inputs from a file path or a directory."""
+
     if input_path.is_file():
         return [input_path]
     if input_path.is_dir():
@@ -74,6 +88,8 @@ def iter_input_files(input_path: Path):
 
 
 def estimate_frame_snr(events: np.ndarray, width: int = EVENT_WIDTH, height: int = EVENT_HEIGHT, grid_size: int = SNR_GRID_SIZE):
+    """Estimate a simple signal-to-noise score from event density and spread."""
+
     event_count = int(len(events))
     if event_count == 0:
         return {
@@ -115,6 +131,8 @@ def estimate_frame_snr(events: np.ndarray, width: int = EVENT_WIDTH, height: int
 
 
 def split_event_windows(file_path: Path, frame_window_ms: int = FRAME_WINDOW_MS):
+    """Split one raw stream into non-empty fixed-duration windows."""
+
     events = load_events(file_path)
     if len(events) == 0:
         return []
@@ -132,7 +150,7 @@ def split_event_windows(file_path: Path, frame_window_ms: int = FRAME_WINDOW_MS)
     if len(edges) < 2:
         edges = np.array([t0, t0 + frame_window_ms], dtype=np.int64)
 
-    frames = []
+    windows = []
     for frame_idx, (start, end) in enumerate(zip(edges[:-1], edges[1:])):
         mask = (timestamps >= start) & (timestamps < end)
         batch = events[mask]
@@ -140,7 +158,7 @@ def split_event_windows(file_path: Path, frame_window_ms: int = FRAME_WINDOW_MS)
         if metrics["signal"] <= 0:
             continue
 
-        frames.append(
+        windows.append(
             EventWindow(
                 source_path=file_path,
                 stream_name=file_path.name,
@@ -155,7 +173,7 @@ def split_event_windows(file_path: Path, frame_window_ms: int = FRAME_WINDOW_MS)
             )
         )
 
-    return frames
+    return windows
 
 
 EventFrame = EventWindow
@@ -163,6 +181,8 @@ split_event_frames = split_event_windows
 
 
 def estimate_stream_snr(frames):
+    """Aggregate per-window SNR values into one stream-level score."""
+
     if not frames:
         return {
             "signal": 0.0,
@@ -188,6 +208,8 @@ def estimate_stream_snr(frames):
 
 
 def build_polarity_count_tensor(events: np.ndarray, width: int = EVENT_WIDTH, height: int = EVENT_HEIGHT) -> np.ndarray:
+    """Convert events into a two-channel polarity count tensor."""
+
     xs = np.clip(events[:, 4].astype(np.int32), 0, width - 1)
     ys = np.clip(events[:, 5].astype(np.int32), 0, height - 1)
     pos = events[:, 0] == 1
@@ -200,6 +222,8 @@ def build_polarity_count_tensor(events: np.ndarray, width: int = EVENT_WIDTH, he
 
 
 def render_event_frame(frame: EventFrame, annotate_lines=None) -> np.ndarray:
+    """Render one event window as a BGR image for previews or videos."""
+
     image = np.zeros((EVENT_HEIGHT, EVENT_WIDTH, 3), dtype=np.uint8)
     events = frame.events
 

@@ -1,3 +1,5 @@
+"""PyTorch dataset and dataloader helpers for saved event-window tensors."""
+
 from pathlib import Path
 
 import torch
@@ -13,6 +15,8 @@ LABEL_TO_INDEX = {
 
 
 class EventWindowTensorDataset(Dataset):
+    """Read exported event-window `.pt` payloads from disk."""
+
     def __init__(self, root=EVENT_WINDOW_TENSORS_DIR, transform=None):
         self.root = Path(root)
         self.transform = transform
@@ -43,6 +47,8 @@ class EventWindowTensorDataset(Dataset):
 
 
 def collate_event_window_batches(batch):
+    """Stack tensors and keep per-sample metadata alongside the batch."""
+
     tensors = torch.stack([item["tensor"] for item in batch], dim=0)
     targets = torch.tensor([item["target"] for item in batch], dtype=torch.long)
     labels = [item["label"] for item in batch]
@@ -58,6 +64,8 @@ def collate_event_window_batches(batch):
 
 
 def make_event_window_dataloader(root=EVENT_WINDOW_TENSORS_DIR, batch_size=8, shuffle=True, num_workers=0, transform=None):
+    """Create a `torch.utils.data.DataLoader` for saved event windows."""
+
     dataset = EventWindowTensorDataset(root=root, transform=transform)
     return DataLoader(
         dataset,

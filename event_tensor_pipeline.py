@@ -1,3 +1,5 @@
+"""Export fixed-duration event windows to `.pt` tensors and preview images."""
+
 from pathlib import Path
 
 import cv2
@@ -18,10 +20,14 @@ DEFAULT_LABEL = "positive"
 
 
 def encode_float(value, decimals=3):
+    """Encode floats into filename-safe tokens."""
+
     return ("{0:0." + str(decimals) + "f}").format(value).replace(".", "p")
 
 
 def build_tensor_filename(window, label):
+    """Build a stable filename that preserves label and window metadata."""
+
     stream_stem = Path(window.stream_name).stem
     return (
         "label-{label}__stream-{stream}__window-{window_idx:04d}__win-{win:03d}ms__"
@@ -38,6 +44,8 @@ def build_tensor_filename(window, label):
 
 
 def iter_matching_assets(output_root, stream_stem, window_index, suffix):
+    """Find existing assets for one logical sample, including legacy names."""
+
     root = Path(output_root)
     for token in ("window", "frame"):
         pattern = "*__stream-{}__{}-{:04d}__*{}".format(stream_stem, token, window_index, suffix)
@@ -46,6 +54,8 @@ def iter_matching_assets(output_root, stream_stem, window_index, suffix):
 
 
 def find_existing_label(output_root, stream_stem, window_index):
+    """Preserve a prior human label when re-exporting a sample."""
+
     for suffix in (".pt", ".png"):
         for path in iter_matching_assets(output_root, stream_stem, window_index, suffix):
             if path.name.startswith("label-positive__"):
@@ -56,12 +66,16 @@ def find_existing_label(output_root, stream_stem, window_index):
 
 
 def remove_existing_assets(output_root, stream_stem, window_index):
+    """Remove stale assets before writing the updated version of a sample."""
+
     for suffix in (".pt", ".png"):
         for path in iter_matching_assets(output_root, stream_stem, window_index, suffix):
             path.unlink()
 
 
 def export_event_window_tensors(input_root=RAW_EVENT_STREAMS_DIR, output_root=EVENT_WINDOW_TENSORS_DIR, label=DEFAULT_LABEL):
+    """Export all raw streams into window tensors and preview images."""
+
     ensure_dir(output_root)
 
     written = 0
@@ -87,6 +101,7 @@ def export_event_window_tensors(input_root=RAW_EVENT_STREAMS_DIR, output_root=EV
                 "snr": window.snr,
                 "source_path": str(window.source_path),
             }
+            # Keep the older keys so existing tooling can read regenerated exports.
             metadata["frame_index"] = metadata["window_index"]
             metadata["start_ms"] = metadata["window_start_ms"]
             metadata["end_ms"] = metadata["window_end_ms"]

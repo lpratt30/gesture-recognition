@@ -1,3 +1,5 @@
+"""Interactive labeling UI for saved event-window previews and tensors."""
+
 from pathlib import Path
 
 import cv2
@@ -15,6 +17,8 @@ QUIT_KEY = ord("q")
 
 
 def tensor_to_bgr_image(tensor):
+    """Turn a two-channel polarity tensor into a viewable color image."""
+
     tensor = tensor.detach().cpu().numpy()
     pos = tensor[0]
     neg = tensor[1]
@@ -35,6 +39,8 @@ def tensor_to_bgr_image(tensor):
 
 
 def swap_label_prefix(name, new_label):
+    """Rewrite the label token at the start of an exported sample name."""
+
     current_name = name
     if current_name.startswith("label-positive__"):
         return current_name.replace("label-positive__", "label-{}__".format(new_label), 1)
@@ -44,6 +50,8 @@ def swap_label_prefix(name, new_label):
 
 
 def load_sample_payload(sample):
+    """Load one saved tensor payload when it exists."""
+
     pt_path = sample.get("pt")
     if pt_path is None:
         return None
@@ -51,6 +59,8 @@ def load_sample_payload(sample):
 
 
 def get_sample_sort_key(sample):
+    """Review dense windows first, then break ties by SNR."""
+
     payload = load_sample_payload(sample)
     if payload is None:
         return (0, 0.0, sample["stem"])
@@ -62,6 +72,8 @@ def get_sample_sort_key(sample):
 
 
 def collect_samples():
+    """Collect paired `.pt` and `.png` assets for each labeled sample."""
+
     samples = {}
     for path in EVENT_WINDOW_TENSORS_DIR.iterdir():
         if not path.is_file() or path.suffix not in {".pt", ".png"}:
@@ -76,6 +88,8 @@ def collect_samples():
 
 
 def relabel_sample(sample, new_label):
+    """Rename both assets and update the saved payload label in place."""
+
     updated = dict(sample)
 
     pt_path = sample.get("pt")
@@ -101,6 +115,8 @@ def relabel_sample(sample, new_label):
 
 
 def load_preview_image(sample):
+    """Load a preview image, falling back to rendering from the tensor."""
+
     if sample.get("png") is not None:
         image = cv2.imread(str(sample["png"]))
         if image is not None:

@@ -1,3 +1,5 @@
+"""Generate heatmaps, summaries, and MP4 previews for raw event streams."""
+
 import sys
 import json
 from pathlib import Path
@@ -14,7 +16,7 @@ from event_core import (
     load_events,
     normalize_timestamps_ms,
     render_event_frame,
-    split_event_frames,
+    split_event_windows,
 )
 from project_paths import EVENT_VISUALIZATIONS_DIR, RAW_EVENT_STREAMS_DIR, ensure_dir
 
@@ -25,6 +27,8 @@ VIDEO_BIN_SIZE_MS = FRAME_WINDOW_MS
 
 
 def build_heatmap(events, width, height, polarity=None):
+    """Accumulate raw events into a dense 2D count map."""
+
     if polarity is None:
         mask = np.ones(len(events), dtype=bool)
     else:
@@ -38,6 +42,8 @@ def build_heatmap(events, width, height, polarity=None):
 
 
 def colorize_heatmap(heatmap):
+    """Compress dynamic range and map the heatmap into RGB for display."""
+
     if np.max(heatmap) <= 0:
         return np.zeros((heatmap.shape[0], heatmap.shape[1], 3), dtype=np.uint8)
     scaled = np.log1p(heatmap)
@@ -47,6 +53,8 @@ def colorize_heatmap(heatmap):
 
 
 def write_summary_images(events, output_dir, width, height):
+    """Write overall, positive-polarity, and negative-polarity heatmaps."""
+
     all_heat = build_heatmap(events, width, height, polarity=None)
     on_heat = build_heatmap(events, width, height, polarity=1)
     off_heat = build_heatmap(events, width, height, polarity=0)
@@ -57,6 +65,8 @@ def write_summary_images(events, output_dir, width, height):
 
 
 def write_event_video(frames, output_dir, width, height, bin_size_ms=VIDEO_BIN_SIZE_MS):
+    """Write one MP4 where each frame corresponds to one event window."""
+
     if not frames:
         return None
 
@@ -86,6 +96,8 @@ def write_event_video(frames, output_dir, width, height, bin_size_ms=VIDEO_BIN_S
 
 
 def write_summary_json(events, timestamps, output_dir, source_path):
+    """Write basic bounds and counts for one visualized stream."""
+
     summary = {
         "source": str(source_path),
         "event_count": int(len(events)),
@@ -103,13 +115,15 @@ def write_summary_json(events, timestamps, output_dir, source_path):
 
 
 def visualize_file(input_path, output_dir):
+    """Generate the full visualization bundle for one raw event stream."""
+
     ensure_dir(output_dir)
 
     events = load_events(input_path)
     ordering_signal = infer_timestamps_ms(events)
     duration_ms = infer_duration_ms(input_path, len(events))
     timestamps = normalize_timestamps_ms(ordering_signal, duration_ms)
-    frames = split_event_frames(input_path, frame_window_ms=VIDEO_BIN_SIZE_MS)
+    frames = split_event_windows(input_path, frame_window_ms=VIDEO_BIN_SIZE_MS)
 
     write_summary_images(events, output_dir, EVENT_WIDTH, EVENT_HEIGHT)
     video_path = write_event_video(frames, output_dir, EVENT_WIDTH, EVENT_HEIGHT)
@@ -122,6 +136,8 @@ def visualize_file(input_path, output_dir):
     if video_path is not None:
         print("Wrote {}".format(video_path))
     print("Wrote {}".format(output_dir / "summary.json"))
+
+
 def main():
     input_path = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(DEFAULT_INPUT)
     output_root = Path(sys.argv[2]) if len(sys.argv) > 2 else Path(DEFAULT_OUTPUT_DIR)
