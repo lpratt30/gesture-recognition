@@ -6,13 +6,20 @@ Early event-vision gesture recognition experiments, data tooling, and visualizat
 
 ## Overview
 
+The implementation is split into two packages:
+
+- `data_handling/`: ingestion, transfers, visualization, tensor export, labeling, and dataset utilities
+- `modeling/`: training and experiment scripts
+
+The root-level script names are thin compatibility wrappers that import from those packages.
+
 The current workflow is organized around raw event streams:
 
 - raw recordings live in `gesture_data/raw_event_streams`
 - visualizations live in `gesture_data/event_visualizations`
 - fixed-duration event-window tensors live in `gesture_data/event_frame_tensors`
 
-The shared window size is defined once in `event_core.py` as `FRAME_WINDOW_MS`. Visualization, tensor export, and SNR ranking all use that same value.
+The shared window size is defined once in `data_handling/event_core.py` as `FRAME_WINDOW_MS`. Visualization, tensor export, and SNR ranking all use that same value.
 
 ## Highest-SNR Event Stream
 
@@ -30,3 +37,4 @@ It is meant as a quick preview of the event collection and ranking pipeline.
 - `event_tensor_dataset.py`: PyTorch dataset and dataloader helpers for saved window tensors
 - `event_frame_labeler.py`: review saved window previews and label them interactively
 - `snr_sort_event_frames.py`: estimate per-stream SNR and create an SNR-ranked stitched MP4
+- `modeling/baseline_randomforest.py` and `modeling/xg_randomforest.py`: train the tabular models on processed features
